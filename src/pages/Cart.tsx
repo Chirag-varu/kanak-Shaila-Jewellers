@@ -205,11 +205,11 @@ export const Cart = () => {
             />
             <h4 className="text-xl font-bold mb-4">Contact</h4>
             <p className="mb-2">
-              <strong>Address:</strong> XYZ..., India
-            </p>
-            <p className="mb-2">
-              <strong>Phone:</strong> +91 xyz...
-            </p>
+                <strong>Address:</strong> Kanak Shaila Jewellers, opp Santacruz railway station (west), mumbai -400055
+              </p>
+              <p className="mb-2">
+                <strong>Phone:</strong> +91 7208594701
+              </p>
             <p className="mb-4">
               <strong>Hours:</strong> 10:00 - 10:00, Mon-Sat
             </p>
