@@ -228,7 +228,7 @@ export function About() {
             </div>
           </div>
           <div className="text-center mt-10">
-            <p className="text-gray-500">© 2026, Co-Developer Chirag Varu - E-commerce</p>
+            <p className="text-gray-500">© 2026, E-commerce</p>
           </div>
         </footer>
 

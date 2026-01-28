@@ -138,6 +138,6 @@ I would love to hear your thoughts and feedback! Feel free to open issues or lea
 
 For questions or feedback, feel free to reach out:
 
-- **Co-Developer**: Chirag Varu 
+- ****:  
 
 ---

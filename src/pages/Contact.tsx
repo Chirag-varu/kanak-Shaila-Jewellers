@@ -104,7 +104,7 @@ export function Contact() {
               className="rounded-full w-11 h-12 border-2 border-gray-200"
             />
             <div>
-              <p className="text-sm md:text-base font-semibold">Co-Developer Chirag Varu</p>
+              <p className="text-sm md:text-base font-semibold"> </p>
               <p className="text-sm text-gray-600">Senior Marketing Manager</p>
               <p className="text-sm">Phone: + 000 132 533 621</p>
               <p className="text-sm">Email: chiragvaru.main@gmail.com</p>
