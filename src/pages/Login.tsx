@@ -1,6 +1,8 @@
 import React, { useState } from "react";
 import { useAuth } from "../Components/AuthContext";
 import { useNavigate } from "react-router-dom";
+import { loginUser } from "../utils/user.service";
+import { addHistory } from "../utils/history.service";
 
 const DEMO_EMAIL = "demo@example.com";
 const DEMO_PASSWORD = "demopassword";
@@ -12,14 +14,16 @@ const Login: React.FC = () => {
   const { login } = useAuth();
   const navigate = useNavigate();
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    // Demo: Accept only demo credentials
-    if (email === DEMO_EMAIL && password === DEMO_PASSWORD) {
-      login();
+
+    try {
+      await loginUser(email, password);
+      await addHistory("LOGIN", email);
+      login({ email });
       navigate("/");
-    } else {
-      setError("Invalid credentials. Use demo details.");
+    } catch (err: any) {
+      setError(err.message);
     }
   };
 

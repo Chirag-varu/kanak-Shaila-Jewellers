@@ -109,7 +109,7 @@ export default function Payment() {
         y += 12;
 
         // Payment Info
-        doc.text(`Payment Method: ${method === "upi" ? `UPI (${upi.id})` : (method === "credit" ? "Credit Card" : "Debit Card") + ` (${card.number})`}`, 10, y);
+        doc.text(`Payment Method: ${method === "upi" ? `UPI (${upi.id})` : (method === "credit" ? "Credit Card" : "Debit Card") + `**** **** **** (${card.number.slice(-4)})`}`, 10, y);
         y += 10;
 
         // Footer

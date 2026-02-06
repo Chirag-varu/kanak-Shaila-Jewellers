@@ -1,6 +1,9 @@
 import React, { useState } from "react";
 import { useAuth } from "../Components/AuthContext";
 import { useNavigate } from "react-router-dom";
+import { createUser } from "../utils/user.service";
+import { addHistory } from "../utils/history.service";
+
 
 const DEMO_EMAIL = "demo@example.com";
 const DEMO_PASSWORD = "demopassword";
@@ -14,19 +17,23 @@ const Signup: React.FC = () => {
   const { login } = useAuth();
   const navigate = useNavigate();
 
-  const handleSubmit = (e: React.FormEvent) => {
+
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+
     if (password !== confirmPassword) {
-      setError("Passwords do not match.");
+      setError("Passwords do not match");
       setSuccess("");
       return;
     }
-    // Demo: Accept only demo credentials
-    if (email === DEMO_EMAIL && password === DEMO_PASSWORD) {
-      login();
+
+    try {
+      await createUser(email, password);
+      await addHistory("SIGNUP", email);
+      login({ email });
       navigate("/");
-    } else {
-      setError("Use demo details to sign up.");
+    } catch (err: any) {
+      setError(err.message);
       setSuccess("");
     }
   };

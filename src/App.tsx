@@ -7,6 +7,7 @@ import { About } from "./pages/About";
 import { Shop } from "./pages/Shop";
 import { Contact } from "./pages/Contact";
 import { Blog } from "./pages/Blog";
+import History from "./pages/HistoryPage";
 import { CartProvider } from "./Components/CartContext";
 import { AuthProvider } from "./Components/AuthContext";
 import { Cart } from "./pages/Cart";
@@ -211,6 +212,7 @@ function App() {
             <Route path="/payment" element={<Payment />} />
             <Route path="/login" element={<Login />} />
             <Route path="/signup" element={<Signup />} />
+            <Route path="/history" element={<History />} />
             <Route path="/order-history" element={<OrderHistory />} />
             <Route path="/productdetail/:id" element={<Productdetail products={allproducts}/>} />
             <Route path="/admin" element={<AdminDashboard />} />

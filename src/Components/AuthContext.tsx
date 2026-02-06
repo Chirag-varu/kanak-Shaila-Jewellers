@@ -1,30 +1,55 @@
-import { createContext, useContext, useState, ReactNode } from "react";
+import { createContext, useContext, useEffect, useState, ReactNode } from "react";
+import { addHistory } from "../utils/history.service";
+
+interface User {
+  email: string;
+}
 
 interface AuthContextType {
   isLoggedIn: boolean;
-  login: () => void;
+  user: User | null;
+  login: (user: User) => void;
   logout: () => void;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export const AuthProvider = ({ children }: { children: ReactNode }) => {
-  const [isLoggedIn, setIsLoggedIn] = useState<boolean>(
-    !!localStorage.getItem("isLoggedIn")
-  );
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const [user, setUser] = useState<User | null>(null);
 
-  const login = () => {
+  // 🔄 Restore session on refresh
+  useEffect(() => {
+    const isAuth = sessionStorage.getItem("isLoggedIn");
+    const storedUser = localStorage.getItem("user");
+
+    if (isAuth === "true" && storedUser) {
+      setIsLoggedIn(true);
+      setUser(JSON.parse(storedUser));
+    }
+  }, []);
+
+  const login = (user: User) => {
+    sessionStorage.setItem("isLoggedIn", "true");
+    localStorage.setItem("user", JSON.stringify(user));
     setIsLoggedIn(true);
-    localStorage.setItem("isLoggedIn", "true");
+    setUser(user);
   };
 
-  const logout = () => {
-    setIsLoggedIn(false);
-    localStorage.removeItem("isLoggedIn");
-  };
+  const logout = async () => {
+  if (user?.email) {
+    await addHistory("LOGOUT", user.email);
+  }
+
+  sessionStorage.clear();
+  localStorage.removeItem("user");
+  setIsLoggedIn(false);
+  setUser(null);
+};
+
 
   return (
-    <AuthContext.Provider value={{ isLoggedIn, login, logout }}>
+    <AuthContext.Provider value={{ isLoggedIn, user, login, logout }}>
       {children}
     </AuthContext.Provider>
   );
