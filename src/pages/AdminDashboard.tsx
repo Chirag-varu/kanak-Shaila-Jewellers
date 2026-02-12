@@ -1,15 +1,19 @@
 import React, { useState, useEffect } from "react";
 import { getProducts, addProduct, updateProduct, deleteProduct } from "../utils/product.service";
 import { getAllOrders } from "../utils/order.service";
+import { getAllUsers, updateUserRole } from "../utils/user.service";
 import { seedDatabase } from "../utils/seed";
-import type { Product, Order } from "../types";
+import { useAuth } from "../Components/AuthContext";
+import type { Product, Order, AppUser } from "../types";
 
 const emptyForm = { name: "", brand: "", price: 0, quantity: 0, image: "", description: "" };
 
 const AdminDashboard: React.FC = () => {
+  const { user: currentUser } = useAuth();
   const [products, setProducts] = useState<Product[]>([]);
   const [orders, setOrders] = useState<Order[]>([]);
-  const [activeTab, setActiveTab] = useState<"inventory" | "orders">("inventory");
+  const [users, setUsers] = useState<AppUser[]>([]);
+  const [activeTab, setActiveTab] = useState<"inventory" | "orders" | "users">("inventory");
   const [showAddForm, setShowAddForm] = useState(false);
   const [editingProduct, setEditingProduct] = useState<Product | null>(null);
   const [formData, setFormData] = useState(emptyForm);
@@ -18,9 +22,10 @@ const AdminDashboard: React.FC = () => {
 
   const fetchData = async () => {
     setLoading(true);
-    const [prods, ords] = await Promise.all([getProducts(), getAllOrders()]);
+    const [prods, ords, usrs] = await Promise.all([getProducts(), getAllOrders(), getAllUsers()]);
     setProducts(prods);
     setOrders(ords);
+    setUsers(usrs);
     setLoading(false);
   };
 
@@ -94,6 +99,13 @@ const AdminDashboard: React.FC = () => {
     setFormData(emptyForm);
   };
 
+  const handleRoleChange = async (uid: string, role: AppUser["role"]) => {
+    await updateUserRole(uid, role);
+    setUsers((prev) =>
+      prev.map((u) => (u.uid === uid ? { ...u, role } : u))
+    );
+  };
+
   if (loading) {
     return <div className="flex items-center justify-center min-h-screen">Loading dashboard...</div>;
   }
@@ -115,6 +127,12 @@ const AdminDashboard: React.FC = () => {
           onClick={() => setActiveTab("orders")}
         >
           Orders ({orders.length})
+        </button>
+        <button
+          className={`px-4 py-2 rounded font-semibold ${activeTab === "users" ? "bg-blue-600 text-white" : "bg-gray-200"}`}
+          onClick={() => setActiveTab("users")}
+        >
+          Users ({users.length})
         </button>
       </div>
 
@@ -298,6 +316,67 @@ const AdminDashboard: React.FC = () => {
                 <tr>
                   <td colSpan={6} className="p-4 text-center text-gray-500">
                     No orders yet.
+                  </td>
+                </tr>
+              )}
+            </tbody>
+          </table>
+        </div>
+      )}
+
+      {/* Users Tab */}
+      {activeTab === "users" && (
+        <div className="bg-white rounded shadow overflow-x-auto">
+          <table className="w-full text-sm border">
+            <thead>
+              <tr className="bg-gray-100">
+                <th className="p-2 border text-left">Email</th>
+                <th className="p-2 border text-left">UID</th>
+                <th className="p-2 border text-center">Current Role</th>
+                <th className="p-2 border text-center">Change Role</th>
+              </tr>
+            </thead>
+            <tbody>
+              {users.map((u) => (
+                <tr key={u.uid} className="border-b hover:bg-gray-50">
+                  <td className="p-2 border">{u.email}</td>
+                  <td className="p-2 border font-mono text-xs">{u.uid.slice(0, 12)}...</td>
+                  <td className="p-2 border text-center">
+                    <span
+                      className={`px-2 py-1 rounded text-xs ${
+                        u.role === "owner"
+                          ? "bg-purple-100 text-purple-700"
+                          : u.role === "admin"
+                          ? "bg-blue-100 text-blue-700"
+                          : "bg-gray-100 text-gray-700"
+                      }`}
+                    >
+                      {u.role}
+                    </span>
+                  </td>
+                  <td className="p-2 border text-center">
+                    {u.uid === currentUser?.uid ? (
+                      <span className="text-xs text-gray-400">You</span>
+                    ) : (
+                      <select
+                        value={u.role}
+                        onChange={(e) =>
+                          handleRoleChange(u.uid, e.target.value as AppUser["role"])
+                        }
+                        className="border rounded px-2 py-1 text-xs"
+                      >
+                        <option value="user">user</option>
+                        <option value="admin">admin</option>
+                        <option value="owner">owner</option>
+                      </select>
+                    )}
+                  </td>
+                </tr>
+              ))}
+              {users.length === 0 && (
+                <tr>
+                  <td colSpan={4} className="p-4 text-center text-gray-500">
+                    No users found.
                   </td>
                 </tr>
               )}

@@ -1,4 +1,4 @@
-import { addProduct } from "./product.service";
+import { addProduct, deleteAllProducts } from "./product.service";
 
 const seedProducts = [
   { name: "Gold Bracelet", brand: "Traditional", price: 4500, quantity: 12, image: "/img/products/f1.jpeg", status: "Active" as const, description: "Handcrafted gold bracelet with traditional design" },
@@ -23,6 +23,7 @@ const seedProducts = [
 ];
 
 export async function seedDatabase() {
+  await deleteAllProducts();
   for (const product of seedProducts) {
     await addProduct(product);
   }

@@ -20,6 +20,7 @@ import CustomerSupport from "./Components/CustomerSupport";
 import OrderHistory from "./pages/OrderHistory";
 import { useState, useEffect } from "react";
 import { getProducts } from "./utils/product.service";
+import { seedDatabase } from "./utils/seed";
 import type { Product } from "./types";
 
 function ProtectedRoute({ children, requiredRole }: { children: JSX.Element; requiredRole: string }) {
@@ -33,7 +34,15 @@ function AppRoutes() {
   const [products, setProducts] = useState<Product[]>([]);
 
   useEffect(() => {
-    getProducts().then(setProducts);
+    async function init() {
+      let prods = await getProducts();
+      if (prods.length === 0) {
+        await seedDatabase();
+        prods = await getProducts();
+      }
+      setProducts(prods);
+    }
+    init();
   }, []);
 
   return (

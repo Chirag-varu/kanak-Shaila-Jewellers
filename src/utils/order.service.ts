@@ -1,7 +1,9 @@
 import {
   collection,
+  doc,
   addDoc,
   getDocs,
+  updateDoc,
   query,
   where,
   orderBy,
@@ -40,4 +42,11 @@ export async function getAllOrders(): Promise<Order[]> {
     id: doc.id,
     ...doc.data(),
   })) as Order[];
+}
+
+export async function updateOrderStatus(
+  orderId: string,
+  status: Order["status"]
+): Promise<void> {
+  await updateDoc(doc(db, COLLECTION, orderId), { status });
 }

@@ -48,3 +48,9 @@ export async function updateProduct(
 export async function deleteProduct(id: string): Promise<void> {
   await deleteDoc(doc(db, COLLECTION, id));
 }
+
+export async function deleteAllProducts(): Promise<void> {
+  const snapshot = await getDocs(collection(db, COLLECTION));
+  const deletes = snapshot.docs.map((d) => deleteDoc(d.ref));
+  await Promise.all(deletes);
+}
