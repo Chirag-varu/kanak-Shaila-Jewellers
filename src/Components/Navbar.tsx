@@ -1,4 +1,3 @@
-
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
   faCartShopping,
@@ -8,17 +7,15 @@ import {
 import { useState } from "react";
 import { useCart } from "./CartContext";
 import { useAuth } from "./AuthContext";
-import { Link } from "react-router-dom"; // Import Link for routing
+import { Link } from "react-router-dom";
 import banner from "../assets/bag-light-removebg.png";
 
 function Navbar() {
   const [menuOpen, setMenuOpen] = useState(false);
   const { cart } = useCart();
-  const { isLoggedIn, logout } = useAuth();
-  // Calculate total items in cart
+  const { isLoggedIn, user, logout } = useAuth();
   const cartCount = cart.reduce((sum, item) => sum + item.quantity, 0);
 
-  // Function to close the menu when a menu item is clicked
   const closeMenu = () => {
     setMenuOpen(false);
   };
@@ -49,8 +46,8 @@ function Navbar() {
 
     {/* Menu */}
     <div
-      className={`absolute md:static top-[5.8rem] left-0 w-full md:w-auto bg-white/95 md:bg-transparent transition-all duration-300 ease-in-out 
-      ${menuOpen ? "opacity-100 translate-y-0" : "opacity-0 -translate-y-3 md:opacity-100 md:translate-y-0"} 
+      className={`absolute md:static top-[5.8rem] left-0 w-full md:w-auto bg-white/95 md:bg-transparent transition-all duration-300 ease-in-out
+      ${menuOpen ? "opacity-100 translate-y-0" : "opacity-0 -translate-y-3 md:opacity-100 md:translate-y-0"}
       md:flex`}
     >
       <ul className="flex flex-col md:flex-row gap-6 md:gap-10 items-center py-6 md:py-0 text-lg font-semibold">
@@ -75,6 +72,15 @@ function Navbar() {
         ) : (
           <>
             <Link to="/order-history" onClick={closeMenu} className="hover:text-[#ef3636]">Orders</Link>
+            {user?.role === "admin" && (
+              <Link to="/admin" onClick={closeMenu} className="hover:text-[#ef3636]">Admin</Link>
+            )}
+            {user?.role === "owner" && (
+              <>
+                <Link to="/admin" onClick={closeMenu} className="hover:text-[#ef3636]">Admin</Link>
+                <Link to="/owner" onClick={closeMenu} className="hover:text-[#ef3636]">Owner</Link>
+              </>
+            )}
             <button onClick={() => { logout(); closeMenu(); }} className="hover:text-[#ef3636]">
               Logout
             </button>

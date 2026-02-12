@@ -1,44 +1,33 @@
 import { createContext, useContext, useState, ReactNode } from "react";
-
-// Define the Product type
-interface Product {
-  id: number;
-  name: string;
-  price: number;
-  quantity: number;
-  image: string;
-}
+import type { CartItem } from "../types";
 
 interface CartContextType {
-  cart: Product[];
-  addToCart: (product: Product) => void;
-  removeFromCart: (id: number) => void;
+  cart: CartItem[];
+  addToCart: (product: CartItem) => void;
+  removeFromCart: (id: string) => void;
   clearCart: () => void;
 }
 
 const CartContext = createContext<CartContextType | undefined>(undefined);
 
 export const CartProvider = ({ children }: { children: ReactNode }) => {
-  const [cart, setCart] = useState<Product[]>([]);
+  const [cart, setCart] = useState<CartItem[]>([]);
 
-  const addToCart = (product: Product) => {
+  const addToCart = (product: CartItem) => {
     setCart((prevCart) => {
-      // Check if the product already exists in the cart
       const existingProduct = prevCart.find((item) => item.id === product.id);
       if (existingProduct) {
-        // If it exists, increase the quantity
         return prevCart.map((item) =>
           item.id === product.id
             ? { ...item, quantity: item.quantity + 1 }
             : item
         );
       }
-      // If it doesn't exist, add the product with quantity 1
       return [...prevCart, { ...product, quantity: 1 }];
     });
   };
 
-  const removeFromCart = (id: number) => {
+  const removeFromCart = (id: string) => {
     setCart((prevCart) => prevCart.filter((item) => item.id !== id));
   };
 
@@ -51,7 +40,6 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
   );
 };
 
-// Custom hook to use the cart context
 export const useCart = () => {
   const context = useContext(CartContext);
   if (!context) {

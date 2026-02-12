@@ -2,8 +2,12 @@ import { useState } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import jsPDF from "jspdf";
 import { useCart } from "../Components/CartContext";
+import { useAuth } from "../Components/AuthContext";
+import { createOrder } from "../utils/order.service";
+
 export default function Payment() {
     const { cart, clearCart } = useCart();
+    const { user } = useAuth();
     const [method, setMethod] = useState<string>("");
     const [step, setStep] = useState<number>(1);
     const [success, setSuccess] = useState(false);
@@ -13,7 +17,6 @@ export default function Payment() {
     const discount = location.state?.discount || 0;
     const couponCode = location.state?.couponCode || "";
 
-    // Demo details
     const cardDemo = {
         number: "4111 1111 1111 1111",
         expiry: "12/28",
@@ -27,12 +30,10 @@ export default function Payment() {
     const [card, setCard] = useState(cardDemo);
     const [upi, setUpi] = useState(upiDemo);
 
-    const handlePay = () => {
-        // Generate PDF receipt (Professional)
+    const handlePay = async () => {
         const doc = new jsPDF();
         let y = 15;
 
-        // Title
         doc.setFontSize(20);
         doc.text("PAYMENT RECEIPT", 105, y, { align: "center" });
         y += 5;
@@ -40,15 +41,13 @@ export default function Payment() {
         doc.line(10, y, 200, y);
         y += 8;
 
-        // Store Info
         doc.setFontSize(11);
-        doc.text("MyShop Pvt Ltd", 10, y);
+        doc.text("Kanak Shaila Jewellers", 10, y);
         doc.text(`Date: ${new Date().toLocaleString()}`, 150, y);
         y += 8;
-        doc.text("Customer: Online Order", 10, y);
+        doc.text(`Customer: ${user?.email || "Online Order"}`, 10, y);
         y += 10;
 
-        // Table Header
         doc.setFontSize(12);
         doc.setFont("helvetica", "bold");
         doc.text("Item", 12, y);
@@ -59,22 +58,27 @@ export default function Payment() {
         doc.line(10, y, 200, y);
         y += 6;
 
-        // Save order to localStorage orderHistory
         const subtotal = cart.reduce((sum, item) => sum + item.price * item.quantity, 0);
         const discountAmount = subtotal * discount;
         const total = subtotal - discountAmount;
-        const order = {
-            id: `ORD${Date.now()}`,
-            date: new Date().toISOString().slice(0, 10),
-            items: cart.map(item => ({ name: item.name, quantity: item.quantity, price: item.price })),
-            total: total
-        };
-        const prev = localStorage.getItem("orderHistory");
-        let orders = prev ? JSON.parse(prev) : [];
-        orders = [order, ...orders];
-        localStorage.setItem("orderHistory", JSON.stringify(orders));
 
-        // Table Body
+        const paymentMethod = method === "upi" ? `UPI (${upi.id})` : (method === "credit" ? "Credit Card" : "Debit Card") + ` (**** ${card.number.slice(-4)})`;
+
+        // Save order to Firestore
+        try {
+            await createOrder({
+                userId: user?.uid || "anonymous",
+                userEmail: user?.email || "anonymous",
+                items: cart.map(item => ({ name: item.name, quantity: item.quantity, price: item.price })),
+                total,
+                date: new Date().toISOString().slice(0, 10),
+                status: "Processing",
+                paymentMethod,
+            });
+        } catch (err) {
+            console.error("Failed to save order:", err);
+        }
+
         doc.setFont("helvetica", "normal");
         doc.setFontSize(11);
 
@@ -90,7 +94,6 @@ export default function Payment() {
         doc.line(10, y, 200, y);
         y += 8;
 
-        // Calculations
         doc.text(`Subtotal:`, 140, y);
         doc.text(` ${subtotal.toFixed(2)}`, 180, y, { align: "right" });
         y += 6;
@@ -108,17 +111,14 @@ export default function Payment() {
 
         y += 12;
 
-        // Payment Info
-        doc.text(`Payment Method: ${method === "upi" ? `UPI (${upi.id})` : (method === "credit" ? "Credit Card" : "Debit Card") + `**** **** **** (${card.number.slice(-4)})`}`, 10, y);
+        doc.text(`Payment Method: ${paymentMethod}`, 10, y);
         y += 10;
 
-        // Footer
         doc.setFontSize(10);
         doc.setTextColor(100);
-        doc.text("Thank you for shopping with MyShop!", 105, y, { align: "center" });
+        doc.text("Thank you for shopping with Kanak Shaila Jewellers!", 105, y, { align: "center" });
         doc.text("This is a system-generated receipt.", 105, y + 5, { align: "center" });
 
-        // Save URL
         const pdfUrl = doc.output("bloburl");
         setReceiptUrl(pdfUrl.toString());
         setSuccess(true);
@@ -127,7 +127,6 @@ export default function Payment() {
         }, 2000);
     };
 
-    // UI
     return (
         <div className="min-h-screen flex flex-col items-center justify-center bg-gray-50 p-2 sm:p-4">
             <div className="bg-white rounded-lg shadow-lg w-full max-w-md p-4 sm:p-8 transition-all duration-300"
@@ -135,7 +134,7 @@ export default function Payment() {
                 <h2 className="text-xl sm:text-2xl font-bold mb-4 sm:mb-6 text-center">Payment Gateway</h2>
                 {success ? (
                     <div className="flex flex-col items-center">
-                        <div className="text-green-600 text-3xl mb-2">✔</div>
+                        <div className="text-green-600 text-3xl mb-2">&#10004;</div>
                         <div className="text-xl font-bold mb-2">Payment Successful!</div>
                         <div className="mb-4 text-gray-600">Thank you for your purchase.</div>
                         <a
@@ -265,7 +264,7 @@ export default function Payment() {
                             <div className="flex flex-col items-center gap-3 sm:gap-4">
                                 <div className="text-base sm:text-lg font-semibold mb-2">Confirm Payment</div>
                                 <div className="w-full bg-gray-100 rounded-lg p-3 sm:p-4 mb-2">
-                                    <div className="mb-1 text-sm sm:text-base">Amount: <span className="font-bold"> {cart.reduce((sum, item) => sum + item.price * item.quantity, 0)}</span></div>
+                                    <div className="mb-1 text-sm sm:text-base">Amount: <span className="font-bold">Rs. {cart.reduce((sum, item) => sum + item.price * item.quantity, 0)}</span></div>
                                     <div className="mb-1 text-sm sm:text-base">Method: <span className="font-bold">{method === "upi" ? `UPI (${upi.id})` : `${method === "credit" ? "Credit Card" : "Debit Card"} (${card.number})`}</span></div>
                                 </div>
                                 <button

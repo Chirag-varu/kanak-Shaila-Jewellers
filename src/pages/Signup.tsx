@@ -1,40 +1,47 @@
 import React, { useState } from "react";
 import { useAuth } from "../Components/AuthContext";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, Link } from "react-router-dom";
 import { createUser } from "../utils/user.service";
 import { addHistory } from "../utils/history.service";
 
-
-const DEMO_EMAIL = "demo@example.com";
-const DEMO_PASSWORD = "demopassword";
-
 const Signup: React.FC = () => {
-  const [email, setEmail] = useState(DEMO_EMAIL);
-  const [password, setPassword] = useState(DEMO_PASSWORD);
-  const [confirmPassword, setConfirmPassword] = useState(DEMO_PASSWORD);
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
   const [error, setError] = useState("");
-  const [success, setSuccess] = useState("");
   const { login } = useAuth();
   const navigate = useNavigate();
 
-
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    setError("");
 
     if (password !== confirmPassword) {
       setError("Passwords do not match");
-      setSuccess("");
+      return;
+    }
+
+    if (password.length < 6) {
+      setError("Password must be at least 6 characters");
       return;
     }
 
     try {
-      await createUser(email, password);
+      const userData = await createUser(email, password);
       await addHistory("SIGNUP", email);
-      login({ email });
+      login(userData);
       navigate("/");
     } catch (err: any) {
-      setError(err.message);
-      setSuccess("");
+      const code = err.code;
+      if (code === "auth/email-already-in-use") {
+        setError("An account with this email already exists");
+      } else if (code === "auth/weak-password") {
+        setError("Password must be at least 6 characters");
+      } else if (code === "auth/invalid-email") {
+        setError("Invalid email address");
+      } else {
+        setError(err.message || "Signup failed");
+      }
     }
   };
 
@@ -50,6 +57,7 @@ const Signup: React.FC = () => {
             value={email}
             onChange={e => setEmail(e.target.value)}
             autoComplete="username"
+            required
           />
         </div>
         <div className="mb-4">
@@ -60,6 +68,7 @@ const Signup: React.FC = () => {
             value={password}
             onChange={e => setPassword(e.target.value)}
             autoComplete="new-password"
+            required
           />
         </div>
         <div className="mb-4">
@@ -70,18 +79,19 @@ const Signup: React.FC = () => {
             value={confirmPassword}
             onChange={e => setConfirmPassword(e.target.value)}
             autoComplete="new-password"
+            required
           />
         </div>
         {error && <div className="text-red-500 mb-2">{error}</div>}
-        {success && <div className="text-green-500 mb-2">{success}</div>}
         <button
           type="submit"
           className="w-full bg-green-500 text-white py-2 rounded hover:bg-green-600"
         >
           Sign Up
         </button>
-        <div className="text-xs text-gray-500 mt-4 text-center">
-          Demo: Email: demo@example.com | Password: demopassword
+        <div className="text-sm text-gray-500 mt-4 text-center">
+          Already have an account?{" "}
+          <Link to="/login" className="text-blue-500 hover:underline">Login</Link>
         </div>
       </form>
     </div>

@@ -1,28 +1,57 @@
-import { openDB } from "idb";
+import {
+  createUserWithEmailAndPassword,
+  signInWithEmailAndPassword,
+  signOut,
+} from "firebase/auth";
+import { doc, setDoc, getDoc, serverTimestamp } from "firebase/firestore";
+import { auth, db } from "../firebase";
+import type { AppUser } from "../types";
 
-const dbPromise = openDB("authDB", 1, {
-  upgrade(db) {
-    if (!db.objectStoreNames.contains("users")) {
-      db.createObjectStore("users", { keyPath: "email" });
-    }
-  },
-});
+export async function createUser(
+  email: string,
+  password: string,
+  role: "user" | "admin" | "owner" = "user"
+): Promise<AppUser> {
+  const credential = await createUserWithEmailAndPassword(auth, email, password);
 
-export async function createUser(email: string, password: string) {
-  const db = await dbPromise;
-  const existing = await db.get("users", email);
-  if (existing) throw new Error("User already exists");
+  const userData: AppUser = {
+    uid: credential.user.uid,
+    email: credential.user.email!,
+    role,
+    createdAt: serverTimestamp(),
+  };
 
-  await db.add("users", { email, password });
+  await setDoc(doc(db, "users", credential.user.uid), userData);
+
+  return userData;
 }
 
-export async function loginUser(email: string, password: string) {
-  const db = await dbPromise;
-  const user = await db.get("users", email);
+export async function loginUser(
+  email: string,
+  password: string
+): Promise<AppUser> {
+  const credential = await signInWithEmailAndPassword(auth, email, password);
 
-  if (!user || user.password !== password) {
-    throw new Error("Invalid credentials");
+  const userDoc = await getDoc(doc(db, "users", credential.user.uid));
+  if (!userDoc.exists()) {
+    const userData: AppUser = {
+      uid: credential.user.uid,
+      email: credential.user.email!,
+      role: "user",
+      createdAt: serverTimestamp(),
+    };
+    await setDoc(doc(db, "users", credential.user.uid), userData);
+    return userData;
   }
 
-  return user;
+  return userDoc.data() as AppUser;
+}
+
+export async function logoutUser(): Promise<void> {
+  await signOut(auth);
+}
+
+export async function getUserProfile(uid: string): Promise<AppUser | null> {
+  const userDoc = await getDoc(doc(db, "users", uid));
+  return userDoc.exists() ? (userDoc.data() as AppUser) : null;
 }

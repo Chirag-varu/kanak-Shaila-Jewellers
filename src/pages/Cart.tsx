@@ -17,14 +17,14 @@ export const Cart = () => {
   const [discount, setDiscount] = useState(0);
   const navigate = useNavigate();
 
-  const handleQuantityIncrease = (id: number) => {
+  const handleQuantityIncrease = (id: string) => {
     const item = cart.find((item) => item.id === id);
     if (item) {
       addToCart({ ...item, quantity: item.quantity + 1 });
     }
   };
 
-  const handleQuantityDecrease = (id: number) => {
+  const handleQuantityDecrease = (id: string) => {
     const item = cart.find((item) => item.id === id);
     if (item && item.quantity > 1) {
       addToCart({ ...item, quantity: --item.quantity });
@@ -32,7 +32,7 @@ export const Cart = () => {
     }
   };
 
-  const handleRemoveItem = (id: number) => {
+  const handleRemoveItem = (id: string) => {
     removeFromCart(id);
   };
 

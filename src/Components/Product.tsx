@@ -3,12 +3,13 @@ import { faCartShopping } from "@fortawesome/free-solid-svg-icons";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "./AuthContext";
 import { useState } from "react";
+import type { Product } from "../types";
 
 export const ProductCard = ({
   product,
   addToCart,
 }: {
-  product: any;
+  product: Product;
   addToCart: Function;
 }) => {
   const navigate = useNavigate();
@@ -20,15 +21,14 @@ export const ProductCard = ({
   };
 
   const handleIconClick = (e: React.MouseEvent) => {
-    e.stopPropagation(); // Prevent navigation or parent click event
+    e.stopPropagation();
     if (!isLoggedIn) {
       navigate("/login");
       return;
     }
-    setIsClicked(true); // Set state to true for red color
-    addToCart(product); // Call the addToCart function
+    setIsClicked(true);
+    addToCart(product);
 
-    // Reset the color after 3 seconds
     setTimeout(() => setIsClicked(false), 3000);
   };
 
@@ -38,14 +38,12 @@ export const ProductCard = ({
       onClick={handleProductdetail}
     >
       <div className="relative flex items-center justify-center w-full h-64 bg-gray-100 rounded-2xl overflow-hidden">
-        {/* Image Section */}
         <img
           src={product.image}
           alt={product.name}
           className="object-cover w-full h-full max-h-60 max-w-full transition-transform transform hover:scale-105 duration-300"
         />
       </div>
-      {/* Content Section */}
       <div className="p-4">
         <p className="text-sm text-gray-500">{product.brand}</p>
         <p className="font-semibold text-xl text-gray-800">{product.name}</p>

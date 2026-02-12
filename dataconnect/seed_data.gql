@@ -1,0 +1,96 @@
+mutation CreateDemoData @transaction @auth(level: USER, insecureReason: "This operation is for seeding demo data and can be run by any logged in user.") {
+  user_insertMany(data: [
+    {
+      id: "550e8400-e29b-41d4-a716-446655440000",
+      email: "alice@example.com",
+      displayName: "Alice Smith",
+      createdAt: "2023-01-01T10:00:00Z",
+      passwordHash: "hashedpassword1",
+      phoneNumber: "123-456-7890",
+      shippingAddress: "123 Alice St",
+      billingAddress: "123 Alice St",
+      role: "customer"
+    },
+    {
+      id: "550e8400-e29b-41d4-a716-446655440001",
+      email: "bob@example.com",
+      displayName: "Bob Johnson",
+      createdAt: "2023-01-02T11:00:00Z",
+      passwordHash: "hashedpassword2",
+      phoneNumber: "098-765-4321",
+      shippingAddress: "456 Bob Ave",
+      billingAddress: "456 Bob Ave",
+      role: "customer"
+    }
+  ])
+  category_insertMany(data: [
+    {
+      id: "650e8400-e29b-41d4-a716-446655440000",
+      name: "Rings",
+      description: "Beautiful rings for all occasions",
+      createdAt: "2023-01-03T12:00:00Z"
+    },
+    {
+      id: "650e8400-e29b-41d4-a716-446655440001",
+      name: "Necklaces",
+      description: "Elegant necklaces for every style",
+      createdAt: "2023-01-04T13:00:00Z"
+    }
+  ])
+  product_insertMany(data: [
+    {
+      id: "750e8400-e29b-41d4-a716-446655440000",
+      categoryId: "650e8400-e29b-41d4-a716-446655440000",
+      name: "Diamond Engagement Ring",
+      description: "A stunning diamond engagement ring.",
+      price: 2500.00,
+      stockQuantity: 10,
+      createdAt: "2023-01-05T14:00:00Z",
+      mainImageURL: "https://example.com/ring1.jpg",
+      additionalImageURLs: ["https://example.com/ring1_a.jpg", "https://example.com/ring1_b.jpg"],
+      material: "Gold",
+      dimensions: "Size 7",
+      weight: 3.5
+    },
+    {
+      id: "750e8400-e29b-41d4-a716-446655440001",
+      categoryId: "650e8400-e29b-41d4-a716-446655440001",
+      name: "Pearl Pendant Necklace",
+      description: "A classic pearl pendant necklace.",
+      price: 150.00,
+      stockQuantity: 25,
+      createdAt: "2023-01-06T15:00:00Z",
+      mainImageURL: "https://example.com/necklace1.jpg",
+      additionalImageURLs: ["https://example.com/necklace1_a.jpg"],
+      material: "Silver",
+      dimensions: "18 inch chain",
+      weight: 15.0
+    }
+  ])
+  order_insertMany(data: [
+    {
+      id: "850e8400-e29b-41d4-a716-446655440000",
+      userId: "550e8400-e29b-41d4-a716-446655440000",
+      orderDate: "2023-01-07T16:00:00Z",
+      totalAmount: 2650.00,
+      status: "Processing",
+      shippingAddress: "123 Alice St",
+      billingAddress: "123 Alice St",
+      paymentMethod: "Credit Card"
+    }
+  ])
+  orderItem_insertMany(data: [
+    {
+      orderId: "850e8400-e29b-41d4-a716-446655440000",
+      productId: "750e8400-e29b-41d4-a716-446655440000",
+      quantity: 1,
+      priceAtPurchase: 2500.00
+    },
+    {
+      orderId: "850e8400-e29b-41d4-a716-446655440000",
+      productId: "750e8400-e29b-41d4-a716-446655440001",
+      quantity: 1,
+      priceAtPurchase: 150.00
+    }
+  ])
+}

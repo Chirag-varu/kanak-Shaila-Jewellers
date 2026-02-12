@@ -1,34 +1,27 @@
 import React, { useEffect, useState } from "react";
-
-interface Order {
-  id: string;
-  date: string;
-  items: { name: string; quantity: number; price: number }[];
-  total: number;
-}
+import { getOrdersByUser } from "../utils/order.service";
+import { useAuth } from "../Components/AuthContext";
+import type { Order } from "../types";
 
 const OrderHistory: React.FC = () => {
   const [orders, setOrders] = useState<Order[]>([]);
+  const [loading, setLoading] = useState(true);
+  const { user } = useAuth();
 
   useEffect(() => {
-    // Demo: Load from localStorage or use sample data
-    const stored = localStorage.getItem("orderHistory");
-    if (stored) {
-      setOrders(JSON.parse(stored));
+    if (user?.uid) {
+      getOrdersByUser(user.uid).then((data) => {
+        setOrders(data);
+        setLoading(false);
+      }).catch(() => setLoading(false));
     } else {
-      setOrders([
-        {
-          id: "ORD123456",
-          date: "2026-01-25",
-          items: [
-            { name: "Gold Bracelet", quantity: 1, price: 4500 },
-            { name: "Diamond Earrings", quantity: 2, price: 12000 }
-          ],
-          total: 28500
-        }
-      ]);
+      setLoading(false);
     }
-  }, []);
+  }, [user]);
+
+  if (loading) {
+    return <div className="text-center p-6 text-gray-500">Loading orders...</div>;
+  }
 
   return (
     <div className="max-w-2xl mx-auto p-6">
@@ -40,8 +33,17 @@ const OrderHistory: React.FC = () => {
           {orders.map(order => (
             <div key={order.id} className="border rounded p-4 bg-white shadow">
               <div className="flex justify-between mb-2">
-                <span className="font-semibold">Order #{order.id}</span>
+                <span className="font-semibold">Order #{order.id?.slice(0, 8)}</span>
                 <span className="text-gray-500">{order.date}</span>
+              </div>
+              <div className="mb-2">
+                <span className={`text-xs px-2 py-1 rounded ${
+                  order.status === "Delivered" ? "bg-green-100 text-green-700" :
+                  order.status === "Processing" ? "bg-yellow-100 text-yellow-700" :
+                  "bg-red-100 text-red-700"
+                }`}>
+                  {order.status}
+                </span>
               </div>
               <ul className="mb-2">
                 {order.items.map((item, idx) => (
@@ -52,6 +54,9 @@ const OrderHistory: React.FC = () => {
                 ))}
               </ul>
               <div className="text-right font-bold">Total: Rs. {order.total}</div>
+              <div className="text-right text-xs text-gray-400 mt-1">
+                Payment: {order.paymentMethod}
+              </div>
             </div>
           ))}
         </div>

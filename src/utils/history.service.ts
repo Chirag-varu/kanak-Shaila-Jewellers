@@ -1,35 +1,41 @@
-import { openDB } from "idb";
+import {
+  collection,
+  addDoc,
+  getDocs,
+  query,
+  orderBy,
+  writeBatch,
+} from "firebase/firestore";
+import { db } from "../firebase";
+import type { HistoryEntry } from "../types";
 
-const dbPromise = openDB("appDB", 1, {
-  upgrade(db) {
-    if (!db.objectStoreNames.contains("history")) {
-      db.createObjectStore("history", { keyPath: "id" });
-    }
-  },
-});
+const COLLECTION = "history";
 
 export async function addHistory(
   action: string,
   email?: string,
   meta?: any
-) {
-  const db = await dbPromise;
-
-  await db.add("history", {
-    id: crypto.randomUUID(),
+): Promise<void> {
+  await addDoc(collection(db, COLLECTION), {
     action,
-    email,
-    meta,
+    email: email || null,
+    meta: meta || null,
     timestamp: Date.now(),
   });
 }
 
-export async function getHistory() {
-  const db = await dbPromise;
-  return db.getAll("history");
+export async function getHistory(): Promise<HistoryEntry[]> {
+  const q = query(collection(db, COLLECTION), orderBy("timestamp", "desc"));
+  const snapshot = await getDocs(q);
+  return snapshot.docs.map((d) => ({
+    id: d.id,
+    ...d.data(),
+  })) as HistoryEntry[];
 }
 
-export async function clearHistory() {
-  const db = await dbPromise;
-  return db.clear("history");
+export async function clearHistory(): Promise<void> {
+  const snapshot = await getDocs(collection(db, COLLECTION));
+  const batch = writeBatch(db);
+  snapshot.docs.forEach((d) => batch.delete(d.ref));
+  await batch.commit();
 }

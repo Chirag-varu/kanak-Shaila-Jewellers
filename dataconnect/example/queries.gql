@@ -1,0 +1,49 @@
+query ListAllProducts @auth(level: PUBLIC, insecureReason: "This operation is safe to expose to the public as it lists public product information.") {
+  products {
+    id
+    name
+    description
+    price
+    mainImageURL
+    additionalImageURLs
+    category {
+      name
+    }
+  }
+}
+
+query GetUserOrders @auth(level: USER) {
+  orders(where: { userId: { eq_expr: "auth.uid" } }) {
+    id
+    orderDate
+    totalAmount
+    status
+    shippingAddress
+    orderItems {
+      product {
+        name
+        price
+      }
+      quantity
+      priceAtPurchase
+    }
+  }
+}
+
+mutation CreateNewCategory($name: String!, $description: String) @auth(expr: "auth.token.admin == true") {
+  category_insert(data: { name: $name, description: $description, createdAt_expr: "request.time" }) {
+    id
+  }
+}
+
+mutation AddProductToOrder($orderId: UUID!, $productId: UUID!, $quantity: Int!, $priceAtPurchase: Float!) @auth(level: USER) {
+  orderItem_insert(data: {
+    orderId: $orderId,
+    productId: $productId,
+    quantity: $quantity,
+    priceAtPurchase: $priceAtPurchase
+  }) {
+    orderId
+    productId
+  }
+}

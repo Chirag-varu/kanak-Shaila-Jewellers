@@ -1,24 +1,4 @@
 import b from "../assets/baner-removebg.png";
-import p1 from "../assets/img/products/f1.jpeg";
-import p2 from "../assets/img/products/f2.jpeg";
-import p3 from "../assets/img/products/f3.jpeg";
-import p4 from "../assets/img/products/f4.jpeg";
-import p5 from "../assets/img/products/f5.jpeg";
-import p6 from "../assets/img/products/f6.jpeg";
-import p7 from "../assets/img/products/f7.jpeg";
-import p8 from "../assets/img/products/f8.jpeg";
-// import p9 from "../assets/img/products/f9.jpeg";
-import p10 from "../assets/img/products/f10.jpeg";
-import n1 from "../assets/img/products/n1.jpeg";
-import n2 from "../assets/img/products/n2.jpeg";
-import n3 from "../assets/img/products/n3.jpeg";
-import n4 from "../assets/img/products/n4.jpeg";
-import n5 from "../assets/img/products/n5.jpeg";
-import n6 from "../assets/img/products/n6.jpeg";
-import n7 from "../assets/img/products/n7.jpeg";
-import n8 from "../assets/img/products/n8.jpeg";
-import n9 from "../assets/img/products/n9.jpeg";
-import n10 from "../assets/img/products/n10.jpeg";
 import { GoArrowRight } from "react-icons/go";
 import b1 from "../assets/img/banner/b1.jpg";
 import {
@@ -33,164 +13,21 @@ import pay from "../assets/img/pay/pay.png";
 import play from "../assets/img/pay/play.jpg";
 import { useCart } from "../Components/CartContext";
 import { ProductCard } from "../Components/Product";
+import { useState, useEffect } from "react";
+import { getProducts } from "../utils/product.service";
+import type { Product } from "../types";
 
 export function Shop() {
   const { addToCart } = useCart();
+  const [products, setProducts] = useState<Product[]>([]);
+  const [loading, setLoading] = useState(true);
 
-  const products = [
-  {
-    id: 1,
-    name: "Gold Bracelet",
-    brand: "Traditional",
-    price: 4500,
-    quantity: 1,
-    image: p1,
-  },
-  {
-    id: 2,
-    name: "Layered Necklace Set",
-    brand: "Bridal",
-    price: 22000,
-    quantity: 1,
-    image: p2,
-  },
-  {
-    id: 3,
-    name: "Diamond Earrings",
-    brand: "Modern",
-    price: 12000,
-    quantity: 1,
-    image: p3,
-  },
-  {
-    id: 4,
-    name: "Gold Stud Earrings",
-    brand: "Classic",
-    price: 3500,
-    quantity: 1,
-    image: p4,
-  },
-  {
-    id: 5,
-    name: "Bridal Necklace Set",
-    brand: "Bridal",
-    price: 55000,
-    quantity: 1,
-    image: p5,
-  },
-  {
-    id: 6,
-    name: "Silver Ring Set",
-    brand: "Minimal",
-    price: 2500,
-    quantity: 1,
-    image: p6,
-  },
-  {
-    id: 7,
-    name: "Designer Choker",
-    brand: "Designer",
-    price: 18000,
-    quantity: 1,
-    image: p7,
-  },
-  {
-    id: 8,
-    name: "Traditional Bangles",
-    brand: "Traditional",
-    price: 8000,
-    quantity: 1,
-    image: p8,
-  },
-  {
-    id: 10,
-    name: "Designer Necklace",
-    brand: "Designer",
-    price: 40000,
-    quantity: 1,
-    image: p10,
-  },
-  {
-    id: 11,
-    name: "Pearl Earrings",
-    brand: "Classic",
-    price: 6000,
-    quantity: 1,
-    image: n1,
-  },
-  {
-    id: 12,
-    name: "Gold Bracelet",
-    brand: "Traditional",
-    price: 5000,
-    quantity: 1,
-    image: n2,
-  },
-  {
-    id: 13,
-    name: "Bridal Jewellery Set",
-    brand: "Bridal",
-    price: 65000,
-    quantity: 1,
-    image: n3,
-  },
-  {
-    id: 14,
-    name: "Antique Necklace",
-    brand: "Antique",
-    price: 30000,
-    quantity: 1,
-    image: n4,
-  },
-  {
-    id: 15,
-    name: "Gemstone Earrings",
-    brand: "Designer",
-    price: 9000,
-    quantity: 1,
-    image: n5,
-  },
-  {
-    id: 16,
-    name: "Kundan Bangles",
-    brand: "Traditional",
-    price: 7500,
-    quantity: 1,
-    image: n6,
-  },
-  {
-    id: 17,
-    name: "Fashion Jewellery Set",
-    brand: "Fashion",
-    price: 25000,
-    quantity: 1,
-    image: n7,
-  },
-  {
-    id: 18,
-    name: "Gold Kada",
-    brand: "Traditional",
-    price: 9000,
-    quantity: 1,
-    image: n8,
-  },
-  {
-    id: 19,
-    name: "Embroidered Box Set",
-    brand: "Gift",
-    price: 3000,
-    quantity: 1,
-    image: n9,
-  },
-  {
-    id: 20,
-    name: "Leaf Design Earrings",
-    brand: "Minimal",
-    price: 2000,
-    quantity: 1,
-    image: n10,
-  },
-];
+  useEffect(() => {
+    getProducts().then((data) => {
+      setProducts(data);
+      setLoading(false);
+    });
+  }, []);
 
   return (
     <div className="h-screen w-full">
@@ -206,15 +43,21 @@ export function Shop() {
       </div>
 
       {/* Main */}
-      <div className="flex mb-4 flex-wrap mt-[4rem]">
-        {products.map((product) => (
-          <ProductCard
-            key={product.id}
-            product={product}
-            addToCart={addToCart}
-          />
-        ))}
-      </div>
+      {loading ? (
+        <div className="flex items-center justify-center py-20">
+          <p className="text-lg text-gray-500">Loading products...</p>
+        </div>
+      ) : (
+        <div className="flex mb-4 flex-wrap mt-[4rem]">
+          {products.map((product) => (
+            <ProductCard
+              key={product.id}
+              product={product}
+              addToCart={addToCart}
+            />
+          ))}
+        </div>
+      )}
 
       {/* navigation button */}
       <div className="w-full flex items-center justify-center gap-4 mt-[4rem] mb-[4rem]">
@@ -264,7 +107,6 @@ export function Shop() {
       {/* Footer */}
       <footer className="text-gray-900 py-10 px-6">
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
-          {/* Contact Section */}
           <div>
             <img className=" w-[10rem] mb-4" src={b} alt="Logo" />
             <h4 className="text-xl font-bold mb-4">Contact</h4>
@@ -288,93 +130,39 @@ export function Shop() {
               </div>
             </div>
           </div>
-
-          {/* About Section */}
           <div>
             <h4 className="text-xl font-bold mb-4">About</h4>
             <ul className="space-y-2">
-              <li>
-                <a href="#" className="hover:text-cyan-600">
-                  About Us
-                </a>
-              </li>
-              <li>
-                <a href="#" className="hover:text-cyan-600">
-                  Delivery Information
-                </a>
-              </li>
-              <li>
-                <a href="#" className="hover:text-cyan-600">
-                  Privacy Policy
-                </a>
-              </li>
-              <li>
-                <a href="#" className="hover:text-cyan-600">
-                  Terms & Conditions
-                </a>
-              </li>
-              <li>
-                <a href="#" className="hover:text-cyan-600">
-                  Contact Us
-                </a>
-              </li>
+              <li><a href="#" className="hover:text-cyan-600">About Us</a></li>
+              <li><a href="#" className="hover:text-cyan-600">Delivery Information</a></li>
+              <li><a href="#" className="hover:text-cyan-600">Privacy Policy</a></li>
+              <li><a href="#" className="hover:text-cyan-600">Terms & Conditions</a></li>
+              <li><a href="#" className="hover:text-cyan-600">Contact Us</a></li>
             </ul>
           </div>
-
-          {/* My Account Section */}
           <div>
             <h4 className="text-xl font-bold mb-4">My Account</h4>
             <ul className="space-y-2">
-              <li>
-                <a href="#" className="hover:text-cyan-600">
-                  Sign In
-                </a>
-              </li>
-              <li>
-                <a href="#" className="hover:text-cyan-600">
-                  View Cart
-                </a>
-              </li>
-              <li>
-                <a href="#" className="hover:text-cyan-600">
-                  My Wishlist
-                </a>
-              </li>
-              <li>
-                <a href="#" className="hover:text-cyan-600">
-                  Track My Order
-                </a>
-              </li>
-              <li>
-                <a href="#" className="hover:text-cyan-600">
-                  Help
-                </a>
-              </li>
+              <li><a href="#" className="hover:text-cyan-600">Sign In</a></li>
+              <li><a href="#" className="hover:text-cyan-600">View Cart</a></li>
+              <li><a href="#" className="hover:text-cyan-600">My Wishlist</a></li>
+              <li><a href="#" className="hover:text-cyan-600">Track My Order</a></li>
+              <li><a href="#" className="hover:text-cyan-600">Help</a></li>
             </ul>
           </div>
-
-          {/* Install App Section */}
           <div>
             <h4 className="text-xl font-bold mb-4">Install App</h4>
             <p className="mb-4">From App Store or Google Play</p>
             <div className="flex gap-4 mb-4">
               <img className="w-32 cursor-pointer" src={app} alt="App Store" />
-              <img
-                className="w-32 cursor-pointer"
-                src={play}
-                alt="Google Play"
-              />
+              <img className="w-32 cursor-pointer" src={play} alt="Google Play" />
             </div>
             <p className="mb-2">Secured Payment Gateways</p>
-            <img
-              className="w-48 cursor-pointer"
-              src={pay}
-              alt="Payment Gateways"
-            />
+            <img className="w-48 cursor-pointer" src={pay} alt="Payment Gateways" />
           </div>
         </div>
         <div className="text-center mt-10">
-          <p className="text-gray-500">© 2026, E-commerce</p></div>
+          <p className="text-gray-500">&copy; 2026, E-commerce</p></div>
       </footer>
     </div>
   );
